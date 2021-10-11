@@ -23,7 +23,7 @@ class VGN(object):
         tic = time.time()
         qual_vol, rot_vol, width_vol = predict(tsdf_vol, self.net, self.device)
         qual_vol, rot_vol, width_vol = process(tsdf_vol, qual_vol, rot_vol, width_vol)
-        grasps, scores = select(qual_vol.copy(), rot_vol, width_vol)
+        grasps, scores, _ = select(qual_vol.copy(), rot_vol, width_vol)
         toc = time.time() - tic
 
         grasps, scores = np.asarray(grasps), np.asarray(scores)
@@ -96,13 +96,14 @@ def select(qual_vol, rot_vol, width_vol, threshold=0.90, max_filter_size=4):
     mask = np.where(qual_vol, 1.0, 0.0)
 
     # construct grasps
-    grasps, scores = [], []
+    grasps, scores, indices = [], [], []
     for index in np.argwhere(mask):
         grasp, score = select_index(qual_vol, rot_vol, width_vol, index)
         grasps.append(grasp)
         scores.append(score)
+        indices.append(index)
 
-    return grasps, scores
+    return grasps, scores, indices
 
 
 def select_index(qual_vol, rot_vol, width_vol, index):
